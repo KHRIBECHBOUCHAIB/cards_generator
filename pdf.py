@@ -116,14 +116,26 @@ def main():
             st.success("Cartes ajoutées! Vous pouvez générer le PDF maintenant.")
 
     if st.button("Générer le PDF"):
-      if 'cards' in st.session_state and len(st.session_state['cards']) >= 8:
-        pdf_bytes = create_pdf(st.session_state['cards'])
-        pdf_base64 = base64.b64encode(pdf_bytes).decode()
-        download_link = f'<a href="data:application/pdf;base64,{pdf_base64}" download="cartes_flash_anki.pdf">Télécharger le PDF</a>'
-        st.markdown(download_link, unsafe_allow_html=True)
-        st.success("PDF généré! Vous pouvez maintenant le télécharger.")
-    else:
-        st.error("Veuillez ajouter suffisamment de cartes pour générer un PDF (au moins 8).")
+        if 'cards' in st.session_state and len(st.session_state['cards']) >= 8:
+            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                pdf = create_pdf(st.session_state['cards'])
+                pdf.output(tmp_file.name)
+
+                with open(tmp_file.name, 'rb') as pdf_file:
+                    pdf_bytes = pdf_file.read()
+
+                pdf_base64 = base64.b64encode(pdf_bytes).decode()
+
+            # Close the temporary file before deleting it
+            tmp_file.close()
+            os.unlink(tmp_file.name)
+
+            download_link = f'<a href="data:application/pdf;base64,{pdf_base64}" download="cartes_flash_anki.pdf">Télécharger le PDF</a>'
+            st.markdown(download_link, unsafe_allow_html=True)
+            st.success("PDF généré! Vous pouvez maintenant le télécharger.")
+        else:
+            st.error("Veuillez ajouter suffisamment de cartes pour générer un PDF (au moins 8).")
+
 
 if __name__ == "__main__":
     main()
