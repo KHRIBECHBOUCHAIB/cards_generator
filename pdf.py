@@ -34,7 +34,7 @@ def create_pdf(cards):
         pdf.set_font("Arial", size=8)
         pdf.set_xy(x + 5, y + 5)
         pdf.cell(card_width - 10, 10, f"Q {index + 1}:", ln=True)
-        pdf.set_font("Arial", size=8)  # Reduced font size for question text
+        pdf.set_font("Arial", size=8)
         pdf.set_xy(x + 5, y + 10)
         pdf.multi_cell(card_width - 10, 5, question, align='J')
 
@@ -65,7 +65,7 @@ def create_pdf(cards):
         pdf.set_font("Arial", size=8)
         pdf.set_xy(x + 5, y + 5)
         pdf.cell(card_width - 10, 10, f"R {swapped_index + 1}:", ln=True)
-        pdf.set_font("Arial", size=8)  # Reduced font size for answer text
+        pdf.set_font("Arial", size=8)
         pdf.set_xy(x + 5, y + 10)
         pdf.multi_cell(card_width - 10, 5, answer, align='J')
 
@@ -75,9 +75,11 @@ def create_pdf(cards):
             pdf.line(margin, separator_y, pdf.w - margin, separator_y)
 
     pdf_output = BytesIO()
-    pdf_output.write(pdf.output(dest='S'))
+    pdf_bytes = pdf.output(dest='S')
+    pdf_output.write(pdf_bytes)
     pdf_output.seek(0)
     return pdf_output
+
 
 
 
