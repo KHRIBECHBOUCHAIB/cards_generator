@@ -1,6 +1,6 @@
 import streamlit as st
 from fpdf import FPDF
-from io import BytesIO
+import io
 
 def create_pdf(cards):
     pdf = FPDF(unit='mm', format='A4')
@@ -74,11 +74,13 @@ def create_pdf(cards):
             separator_y = y + card_height
             pdf.line(margin, separator_y, pdf.w - margin, separator_y)
 
-    pdf_output = BytesIO()
+    pdf_output = io.BytesIO()
     pdf_bytes = pdf.output(dest='S')
     pdf_output.write(pdf_bytes)
     pdf_output.seek(0)
     return pdf_output
+
+
 
 
 
