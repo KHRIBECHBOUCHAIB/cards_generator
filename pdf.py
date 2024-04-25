@@ -78,6 +78,7 @@ def create_pdf(cards):
 
 
 
+import io
 
 def main():
     st.title("Générateur de cartes flash Anki")
@@ -110,14 +111,15 @@ def main():
     if st.button("Générer le PDF"):
         if 'cards' in st.session_state and len(st.session_state['cards']) >= 8:
             pdf_bytes = create_pdf(st.session_state['cards'])
-            pdf_bytes = bytes(pdf_bytes)  # Convert bytearray to bytes
+            pdf_file = io.BytesIO(pdf_bytes)
             st.success("PDF généré! Vous pouvez maintenant le télécharger.")
             st.download_button(label="Télécharger le PDF",
-                               data=pdf_bytes,
+                               data=pdf_file,
                                file_name="cartes_flash_anki.pdf",
                                mime='application/pdf')
         else:
             st.error("Veuillez ajouter suffisamment de cartes pour générer un PDF (au moins 8).")
+
 
 
 
