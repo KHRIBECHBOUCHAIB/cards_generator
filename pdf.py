@@ -1,6 +1,5 @@
 import streamlit as st
 from fpdf import FPDF
-import io
 
 def create_pdf(cards):
     pdf = FPDF(unit='mm', format='A4')
@@ -74,11 +73,9 @@ def create_pdf(cards):
             separator_y = y + card_height
             pdf.line(margin, separator_y, pdf.w - margin, separator_y)
 
-    pdf_output = io.BytesIO()
     pdf_bytes = pdf.output(dest='S')
-    pdf_output.write(pdf_bytes)
-    pdf_output.seek(0)
-    return pdf_output
+    return pdf_bytes
+
 
 
 
@@ -93,7 +90,7 @@ def main():
         # Create a list to store questions and answers
         questions = []
         answers = []
-        
+
         # Use columns to place questions and answers side by side
         for i in range(8):
             col1, col2 = st.columns(2)
@@ -103,7 +100,7 @@ def main():
                 answer = st.text_input(f"Réponse {i+1}:", key=f"a{i}")
             questions.append(question)
             answers.append(answer)
-        
+
         submitted = st.form_submit_button("Ajouter les cartes")
         if submitted:
             # Store pairs of questions and answers in session state
@@ -115,14 +112,16 @@ def main():
 
     if st.button("Générer le PDF"):
         if 'cards' in st.session_state and len(st.session_state['cards']) >= 8:
-            pdf_file = create_pdf(st.session_state['cards'])
+            pdf_bytes = create_pdf(st.session_state['cards'])
+            pdf_bytes = bytes(pdf_bytes)  # Convert bytearray to bytes
             st.success("PDF généré! Vous pouvez maintenant le télécharger.")
             st.download_button(label="Télécharger le PDF",
-                               data=pdf_file,
+                               data=pdf_bytes,
                                file_name="cartes_flash_anki.pdf",
                                mime='application/pdf')
         else:
             st.error("Veuillez ajouter suffisamment de cartes pour générer un PDF (au moins 8).")
+
 
 if __name__ == "__main__":
     main()
