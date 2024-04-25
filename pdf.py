@@ -1,5 +1,7 @@
 import streamlit as st
 from fpdf import FPDF
+import base64
+
 
 def create_pdf(cards):
     pdf = FPDF(unit='mm', format='A4')
@@ -113,14 +115,14 @@ def main():
     if st.button("Générer le PDF"):
         if 'cards' in st.session_state and len(st.session_state['cards']) >= 8:
             pdf_bytes = create_pdf(st.session_state['cards'])
-            pdf_bytes = bytes(pdf_bytes)  # Convert bytearray to bytes explicitly
+            pdf_base64 = base64.b64encode(pdf_bytes).decode()
+            download_link = f'<a href="data:application/pdf;base64,{pdf_base64}" download="cartes_flash_anki.pdf">Télécharger le PDF</a>'
+            st.markdown(download_link, unsafe_allow_html=True)
             st.success("PDF généré! Vous pouvez maintenant le télécharger.")
-            st.download_button(label="Télécharger le PDF",
-                               data=pdf_bytes,
-                               file_name="cartes_flash_anki.pdf",
-                               mime='application/pdf')
         else:
             st.error("Veuillez ajouter suffisamment de cartes pour générer un PDF (au moins 8).")
+
+
 
 if __name__ == "__main__":
     main()
