@@ -113,7 +113,6 @@ def main():
     if st.button("Générer le PDF"):
         if 'cards' in st.session_state and len(st.session_state['cards']) >= 8:
             pdf_bytes = create_pdf(st.session_state['cards'])
-            pdf_bytes = bytearray(pdf_bytes).tobytes()  # Convert bytearray to bytes
             st.success("PDF généré! Vous pouvez maintenant le télécharger.")
             st.download_button(label="Télécharger le PDF",
                                data=pdf_bytes,
