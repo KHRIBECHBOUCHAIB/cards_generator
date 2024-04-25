@@ -115,7 +115,7 @@ def main():
     if st.button("Générer le PDF"):
         if 'cards' in st.session_state and len(st.session_state['cards']) >= 8:
             pdf_bytes = create_pdf(st.session_state['cards'])
-            pdf_base64 = base64.b64encode(pdf_bytes).decode()
+            pdf_base64 = base64.b64encode(pdf_bytes.decode('latin-1').encode('latin-1')).decode()
             download_link = f'<a href="data:application/pdf;base64,{pdf_base64}" download="cartes_flash_anki.pdf">Télécharger le PDF</a>'
             st.markdown(download_link, unsafe_allow_html=True)
             st.success("PDF généré! Vous pouvez maintenant le télécharger.")
