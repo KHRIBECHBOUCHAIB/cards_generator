@@ -1,7 +1,7 @@
 import os
 import streamlit as st
 from fpdf import FPDF
-from PIL import Image
+
 
 logo_width = 15
 logo_path = os.path.join('images', 'logo1.png')
@@ -81,6 +81,7 @@ def create_pdf(cards):
     pdf_bytes = pdf.output(dest='S')
     return pdf_bytes
 
+
 def main():
     if not os.path.exists(os.path.join('images')) or not os.path.isfile(logo_path):
         raise FileNotFoundError("The 'images' directory or the logo file does not exist.")
@@ -115,10 +116,9 @@ def main():
     if st.button("Générer le PDF"):
         if 'cards' in st.session_state and len(st.session_state['cards']) >= 8:
             pdf_bytes = create_pdf(st.session_state['cards'])
-            pdf_bytes = bytes(pdf_bytes)  # Convert bytearray to bytes
             st.success("PDF généré! Vous pouvez maintenant le télécharger.")
             st.download_button(label="Télécharger le PDF",
-                               data=pdf_bytes,
+                               data=bytes(pdf_bytes),  # Convert bytearray to bytes
                                file_name="cartes_flash_anki.pdf",
                                mime='application/pdf')
         else:
@@ -126,6 +126,7 @@ def main():
 
     if st.button("Clear"):
         st.session_state.clear()
+
 
 
 if __name__ == "__main__":
