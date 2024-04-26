@@ -1,21 +1,16 @@
-import os
 import streamlit as st
 from fpdf import FPDF
 
-
-logo_width = 15
-logo_path = os.path.join('images', 'logo1.png')
-
 def create_pdf(cards):
-    if len(cards) < 8:
-        raise ValueError("At least 8 cards are required to generate the PDF.")
-
     pdf = FPDF(unit='mm', format='A4')
 
     # Calculate card dimensions and margins
     card_width = (pdf.w - 4) / 2  # 2 cards per row, 2mm margin on each side
     card_height = (pdf.h - 10) / 4  # 4 rows of cards, 2mm margin on top and bottom, and 1mm between rows
     margin = 2
+
+    logo_width = 15
+    logo_path = 'images/logo1.png'
 
     # Create a page for questions
     pdf.add_page()
@@ -82,10 +77,12 @@ def create_pdf(cards):
     return pdf_bytes
 
 
-def main():
-    if not os.path.exists(os.path.join('images')) or not os.path.isfile(logo_path):
-        raise FileNotFoundError("The 'images' directory or the logo file does not exist.")
 
+
+
+
+
+def main():
     st.title("Générateur de cartes flash Anki")
     st.subheader("Entrez 8 questions et 8 réponses pour générer des cartes flash.")
 
@@ -116,19 +113,15 @@ def main():
     if st.button("Générer le PDF"):
         if 'cards' in st.session_state and len(st.session_state['cards']) >= 8:
             pdf_bytes = create_pdf(st.session_state['cards'])
+            pdf_bytes = bytes(pdf_bytes)  # Convert bytearray to bytes
             st.success("PDF généré! Vous pouvez maintenant le télécharger.")
             st.download_button(label="Télécharger le PDF",
-                               data=bytes(pdf_bytes),  # Convert bytearray to bytes
+                               data=pdf_bytes,
                                file_name="cartes_flash_anki.pdf",
                                mime='application/pdf')
         else:
             st.error("Veuillez ajouter suffisamment de cartes pour générer un PDF (au moins 8).")
 
-    if st.button("Clear"):
-        st.session_state.clear()
-
-
 
 if __name__ == "__main__":
     main()
-
