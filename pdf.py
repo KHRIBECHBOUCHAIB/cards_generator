@@ -1,8 +1,6 @@
 import streamlit as st
 from fpdf import FPDF
-import io
 from io import BytesIO
-
 
 def create_pdf(cards):
     pdf = FPDF(unit='mm', format='A4')
@@ -36,9 +34,9 @@ def create_pdf(cards):
         pdf.set_font("Arial", size=8)
         pdf.set_xy(x + 5, y + 5)
         pdf.cell(card_width - 10, 10, f"Q {index + 1}:", ln=True)
-        pdf.set_font("Arial", size=8)
+        pdf.set_font("Arial", size=8)  # Reduced font size for question text
         pdf.set_xy(x + 5, y + 10)
-        pdf.multi_cell(card_width - 10, 5, question, align='C')
+        pdf.multi_cell(card_width - 10, 5, question, align='J')
 
         # Draw horizontal separator lines between the cards
         if (index + 1) % 2 == 0 and index < 7:
@@ -67,25 +65,27 @@ def create_pdf(cards):
         pdf.set_font("Arial", size=8)
         pdf.set_xy(x + 5, y + 5)
         pdf.cell(card_width - 10, 10, f"R {swapped_index + 1}:", ln=True)
-        pdf.set_font("Arial", size=8)
+        pdf.set_font("Arial", size=8)  # Reduced font size for answer text
         pdf.set_xy(x + 5, y + 10)
-        pdf.multi_cell(card_width - 10, 5, answer, align='C')
+        pdf.multi_cell(card_width - 10, 5, answer, align='J')
 
         # Draw horizontal separator lines between the cards
         if (index + 1) % 2 == 0 and index < 7:
             separator_y = y + card_height
             pdf.line(margin, separator_y, pdf.w - margin, separator_y)
 
-    # Save the PDF to a BytesIO object
     pdf_output = BytesIO()
     pdf_output.write(pdf.output(dest='S'))
     pdf_output.seek(0)
-
     return pdf_output
+
 
 def main():
     st.title("Générateur de cartes flash Anki")
     st.subheader("Entrez 8 questions et 8 réponses pour générer des cartes flash.")
+
+    if 'cards' not in st.session_state:
+        st.session_state['cards'] = []
 
     with st.form(key='cards_form'):
         questions = []
@@ -106,24 +106,20 @@ def main():
         submitted = st.form_submit_button("Ajouter les cartes")
         if submitted:
             # Store pairs of questions and answers in session state
-            if 'cards' not in st.session_state:
-                st.session_state['cards'] = []
             for q, a in zip(questions, answers):
                 st.session_state['cards'].append((q, a))
             st.success("Cartes ajoutées! Vous pouvez générer le PDF maintenant.")
 
     if st.button("Générer le PDF"):
-        if 'cards' in st.session_state and len(st.session_state['cards']) >= 8:
+        if len(st.session_state['cards']) >= 8:
             pdf_bytes = create_pdf(st.session_state['cards'])
-            pdf_file = pdf_bytes  # Assign pdf_bytes to pdf_file directly
             st.success("PDF généré! Vous pouvez maintenant le télécharger.")
             st.download_button(label="Télécharger le PDF",
-                               data=pdf_file,
+                               data=pdf_bytes.getvalue(),
                                file_name="cartes_flash_anki.pdf",
                                mime='application/pdf')
         else:
             st.error("Veuillez ajouter suffisamment de cartes pour générer un PDF (au moins 8).")
-
 
 if __name__ == "__main__":
     main()
