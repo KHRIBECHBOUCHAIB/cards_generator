@@ -1,5 +1,8 @@
 import streamlit as st
 from fpdf import FPDF
+import io
+from io import BytesIO
+
 
 def create_pdf(cards):
     pdf = FPDF(unit='mm', format='A4')
@@ -35,7 +38,7 @@ def create_pdf(cards):
         pdf.cell(card_width - 10, 10, f"Q {index + 1}:", ln=True)
         pdf.set_font("Arial", size=8)
         pdf.set_xy(x + 5, y + 10)
-        pdf.multi_cell(card_width - 10, 5, question, align='J')
+        pdf.multi_cell(card_width - 10, 5, question, align='C')
 
         # Draw horizontal separator lines between the cards
         if (index + 1) % 2 == 0 and index < 7:
@@ -66,38 +69,37 @@ def create_pdf(cards):
         pdf.cell(card_width - 10, 10, f"R {swapped_index + 1}:", ln=True)
         pdf.set_font("Arial", size=8)
         pdf.set_xy(x + 5, y + 10)
-        pdf.multi_cell(card_width - 10, 5, answer, align='J')
+        pdf.multi_cell(card_width - 10, 5, answer, align='C')
 
         # Draw horizontal separator lines between the cards
         if (index + 1) % 2 == 0 and index < 7:
             separator_y = y + card_height
             pdf.line(margin, separator_y, pdf.w - margin, separator_y)
 
-    pdf_bytes = pdf.output(dest='S')
-    return pdf_bytes
+    # Save the PDF to a BytesIO object
+    pdf_output = BytesIO()
+    pdf_output.write(pdf.output(dest='S'))
+    pdf_output.seek(0)
 
-
-
-
-
-
+    return pdf_output
 
 def main():
     st.title("Générateur de cartes flash Anki")
     st.subheader("Entrez 8 questions et 8 réponses pour générer des cartes flash.")
 
     with st.form(key='cards_form'):
-        # Create a list to store questions and answers
         questions = []
         answers = []
 
-        # Use columns to place questions and answers side by side
         for i in range(8):
             col1, col2 = st.columns(2)
             with col1:
-                question = st.text_input(f"Question {i+1}:", key=f"q{i}")
+                question = st.text_area(f"Question {i+1}:", key=f"q{i}")
+                st.markdown(f"**Question {i+1} preview:**\n{question}", unsafe_allow_html=True)
+
             with col2:
-                answer = st.text_input(f"Réponse {i+1}:", key=f"a{i}")
+                answer = st.text_area(f"Réponse {i+1}:", key=f"a{i}")
+                st.markdown(f"**Réponse {i+1} preview:**\n{answer}", unsafe_allow_html=True)
             questions.append(question)
             answers.append(answer)
 
@@ -113,10 +115,10 @@ def main():
     if st.button("Générer le PDF"):
         if 'cards' in st.session_state and len(st.session_state['cards']) >= 8:
             pdf_bytes = create_pdf(st.session_state['cards'])
-            pdf_bytes = bytes(pdf_bytes)  # Convert bytearray to bytes
+            pdf_file = pdf_bytes  # Assign pdf_bytes to pdf_file directly
             st.success("PDF généré! Vous pouvez maintenant le télécharger.")
             st.download_button(label="Télécharger le PDF",
-                               data=pdf_bytes,
+                               data=pdf_file,
                                file_name="cartes_flash_anki.pdf",
                                mime='application/pdf')
         else:
